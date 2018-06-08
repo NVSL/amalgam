@@ -1,70 +1,3 @@
-var Linuxduino = require("linuxduino");
-
-Linuxduino.onRuntimeInitialized = function() {
-  customElements.define('physical-dynamic-range', PHYSCIAL_DYNAMIC_RANGE);
-}
-
-
-// Firmware code
-
-const FDW = 0;
-const BKW = 1;
-const STOP = 2;
-
-function motor(pinOne, pinTwo, motorDir) {
-  if (motorDir == 0) {
-    Linuxduino.digitalWrite(pinOne, Linuxduino.HIGH);
-    Linuxduino.digitalWrite(pinTwo, Linuxduino.LOW);
-  } else if (motorDir == 1) {
-    Linuxduino.digitalWrite(pinOne, Linuxduino.LOW);
-    Linuxduino.digitalWrite(pinTwo, Linuxduino.HIGH);
-  } else {
-    Linuxduino.digitalWrite(pinOne, Linuxduino.LOW);
-    Linuxduino.digitalWrite(pinTwo, Linuxduino.LOW);    
-  }
-}
-
-function setSliderPosition(sliderPos, pinMotorOne, pinMotorTwo, pinTouch, analogPin) {    
-  var val = ads_readADC(Wire, analogPin);     // read the analog input
-  //console.log("Init ADC: "+val+" POS:"+sliderPos);
-  if (val < sliderPos-5 && !Linuxduino.digitalRead(pinTouch)) {
-    motor(pinMotorOne, pinMotorTwo, FDW);
-    while (ads_readADC(Wire, analogPin) < sliderPos && !Linuxduino.digitalRead(pinTouch)){
-      console.log("Moving FDW"); 
-    }
-    motor(pinMotorOne, pinMotorTwo, STOP);
-  } else if (val > sliderPos+5) {
-    motor(pinMotorOne, pinMotorTwo, BKW);
-    while (ads_readADC(Wire, analogPin) > sliderPos && !Linuxduino.digitalRead(pinTouch)){
-     console.log("Moving BKW"); 
-    }
-    motor(pinMotorOne, pinMotorTwo, STOP);
-  } else {
-    console.log("Reached a Set Point");
-  }
-}
-
-function onlyFordwardSlider(sliderPos, pinMotorOne, pinMotorTwo, pinTouch, analogPin) {         
-  var val = ads_readADC(Wire, analogPin);     // read the input pin
-  //console.log("ADC: "+val+" POS:"+sliderPos);
-  if (val < sliderPos && !Linuxduino.digitalRead(pinTouch)) {
-    //console.log("value less than setPoint");
-    motor(pinMotorOne, pinMotorTwo, FDW);
-    while (ads_readADC(Wire, analogPin) < sliderPos && !Linuxduino.digitalRead(pinTouch)){
-      console.log("Moving FDW"); 
-    }
-    motor(pinMotorOne, pinMotorTwo, STOP);
-  }
-}
-
-function checkNewSliderPosition(pinTouch, analogPin) {
-  if (Linuxduino.digitalRead(pinTouch) == Linuxduino.HIGH) {
-    return ads_readADC(Wire, analogPin);
-  } else {
-    return -1;
-  }
-}
-
 class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
 
 	constructor () {
@@ -77,7 +10,70 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
 		this.motora;
 		this.motorb;
 		this.touch;
+    this.POTADCMIN = 19;
+    this.POTADCMAX = 1084;
+    this.FDW = 0;
+    this.BKW = 1;
+    this.STOP = 2;
+    this.Wire = null;
+
+    // Libraries
+    this.ADC = require("Adafrui_ADS1015");
 	}
+
+  motor(pinOne, pinTwo, motorDir) {
+    if (motorDir == 0) {
+      Linuxduino.digitalWrite(pinOne, Linuxduino.HIGH);
+      Linuxduino.digitalWrite(pinTwo, Linuxduino.LOW);
+    } else if (motorDir == 1) {
+      Linuxduino.digitalWrite(pinOne, Linuxduino.LOW);
+      Linuxduino.digitalWrite(pinTwo, Linuxduino.HIGH);
+    } else {
+      Linuxduino.digitalWrite(pinOne, Linuxduino.LOW);
+      Linuxduino.digitalWrite(pinTwo, Linuxduino.LOW);    
+    }
+  }
+
+  setSliderPosition(sliderPos, pinMotorOne, pinMotorTwo, pinTouch, analogPin) {    
+    var val = this.ADC.ads_readADC(this.Wire, analogPin);     // read the analog input
+    //console.log("Init ADC: "+val+" POS:"+sliderPos);
+    if (val < sliderPos-5 && !Linuxduino.digitalRead(pinTouch)) {
+      this.motor(pinMotorOne, pinMotorTwo, this.FDW);
+      while (this.ADC.ads_readADC(this.Wire, analogPin) < sliderPos && !Linuxduino.digitalRead(pinTouch)){
+        console.log("Moving FDW"); 
+      }
+      this.motor(pinMotorOne, pinMotorTwo, this.STOP);
+    } else if (val > sliderPos+5) {
+      this.motor(pinMotorOne, pinMotorTwo, this.BKW);
+      while (this.ADC.ads_readADC(this.Wire, analogPin) > sliderPos && !Linuxduino.digitalRead(pinTouch)){
+       console.log("Moving BKW"); 
+      }
+      this.motor(pinMotorOne, pinMotorTwo, this.STOP);
+    } else {
+      console.log("Reached a Set Point");
+    }
+  }
+
+  onlyFordwardSlider(sliderPos, pinMotorOne, pinMotorTwo, pinTouch, analogPin) {         
+    var val = this.ADC.ads_readADC(this.Wire, analogPin);     // read the input pin
+    //console.log("ADC: "+val+" POS:"+sliderPos);
+    if (val < sliderPos && !Linuxduino.digitalRead(pinTouch)) {
+      //console.log("value less than setPoint");
+      this.motor(pinMotorOne, pinMotorTwo, this.FDW);
+      while (this.ADC.ads_readADC(this.Wire, analogPin) < sliderPos && !Linuxduino.digitalRead(pinTouch)){
+        console.log("Moving FDW"); 
+      }
+      this.motor(pinMotorOne, pinMotorTwo, this.STOP);
+    }
+  }
+
+  checkNewSliderPosition(pinTouch, analogPin) {
+    if (Linuxduino.digitalRead(pinTouch) == Linuxduino.HIGH) {
+      return this.ADC.ads_readADC(this.Wire, analogPin);
+    } else {
+      return -1;
+    }
+  }
 
 	map (x, in_min, in_max, out_min, out_max, step) {
 	  var mapValue = (x - in_min) * (out_max - out_min) 
@@ -98,13 +94,13 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
   			me.value != undefined   &&
   			me.touch  != undefined ) {
 
-  			var newPosition = checkNewSliderPosition(me.touch, 1);
+  			var newPosition = me.checkNewSliderPosition(me.touch, 1);
   			if (newPosition != -1) {
   				// Map values
-					var rangeValue = me.map(newPosition, POTADCMIN, 
-              POTADCMAX, me.min, me.max, me.step);
+					var rangeValue = me.map(newPosition, me.POTADCMIN, 
+              me.POTADCMAX, me.min, me.max, me.step);
     			me.value = rangeValue;
-    			console.log("New Slider Position: "+me.value);
+    			//console.log("New Slider Position: "+me.value);
     			me.oninput();
   			}
 	  	}
@@ -123,14 +119,14 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
 			this.touch  != undefined 	) {
 
 		  var newPosition = this.map(position, this.min, this.max, 
-          POTADCMIN, POTADCMAX, this.step);
+          this.POTADCMIN, this.POTADCMAX, this.step);
 			this.value = newPosition;
-			if (direction == FDW) {
-				console.log("FDW New Position:"+newPosition);
-				onlyFordwardSlider(this.value, this.motora, this.motorb, this.touch, 1);
-			} else if (direction == BKW) {
-				console.log("BKW New Position:"+newPosition);
-				setSliderPosition(this.value, this.motora, this.motorb, this.touch, 1);
+			if (direction == this.FDW) {
+				//console.log("FDW New Position:"+newPosition);
+				this.onlyFordwardSlider(this.value, this.motora, this.motorb, this.touch, 1);
+			} else if (direction == this.BKW) {
+				//console.log("BKW New Position:"+newPosition);
+				this.setSliderPosition(this.value, this.motora, this.motorb, this.touch, 1);
 			}
   	}
 
@@ -145,8 +141,8 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
     console.log("Dynamic Slider Ready");
 
     // Initialize I2C 
-    Wire = new Linuxduino.Wire();
-    Wire.begin("/dev/i2c-1"); // TODO: add a attribute for this and the adc number. 
+    this.Wire = new Linuxduino.Wire();
+    this.Wire.begin("/dev/i2c-1"); // TODO: add a attribute for this and the adc number. 
 
     // Initialize gpios
     Linuxduino.pinMode(this.motora, Linuxduino.OUTPUT); //pinMotorOne
@@ -154,9 +150,9 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
   	Linuxduino.pinMode(this.touch, Linuxduino.INPUT);   //pinTouch
 
   	var newPosition = this.map(this.value, this.min, this.max, 
-      POTADCMIN, POTADCMAX, this.step);
-  	setSliderPosition(newPosition, this.motora, this.motorb, this.touch, 1);
-    this.onSliderInput(1000);
+        this.POTADCMIN, this.POTADCMAX, this.step);
+  	this.setSliderPosition(newPosition, this.motora, this.motorb, this.touch, 1);
+    this.onSliderInput(500);
   }
 
 	// Respond to attribute changes.
@@ -173,11 +169,11 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
     		return;
     	} else if (parseFloat(newValue) > parseFloat(oldValue)) {
     		this.value = parseFloat(newValue);
-    		this.onSliderNewPosition(this.value, FDW);
+    		this.onSliderNewPosition(this.value, this.FDW);
     	} else {
     		// Less than oldValue
     		this.value = parseFloat(newValue);
-    		this.onSliderNewPosition(this.value, BKW);
+    		this.onSliderNewPosition(this.value, this.BKW);
     	}
     } else if (attr == 'motora') {
     	this.motora = parseInt(newValue);

@@ -1,9 +1,3 @@
-var Linuxduino = require("linuxduino");
-
-Linuxduino.onRuntimeInitialized = function() {
-  customElements.define('physical-static-range', PHYSCIAL_STATIC_RANGE);
-}
-
 class PHYSCIAL_STATIC_RANGE extends HTMLElement {
 
 	constructor () {
@@ -13,6 +7,12 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
 		this.max;
 		this.step;
 		this.value;
+		this.POTADCMIN = 19;
+		this.POTADCMAX = 1084;
+		this.Wire = null;
+
+		// Libraries
+		this.ADC = require("Adafrui_ADS1015");
 	}
 
 	map (x, in_min, in_max, out_min, out_max, step) {
@@ -22,10 +22,6 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
 	}
 
 	readADC (milliseconds) {
-
-  	// Pot Adc parameters
-  	var adcMin = 0;
-  	var adcMax = 1098;
 
   	// Timer
   	var me = this;
@@ -38,21 +34,18 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
 	  			me.value != undefined ) {
 
 	  		// Read adc
- 				var adcValue = ads_readADC(Wire, 0);
+ 				var adcValue = me.ADC.ads_readADC(me.Wire, 0);
 
         // To prevent adc speaks when in off or cero
-        if (adcValue > adcMax) adcValue = 0;
+        if (adcValue > me.POTADCMAX) adcValue = me.POTADCMAX;
+        if (adcValue < me.POTADCMIN) adcValue = me.POTADCMIN;
 
  				// Map values
- 				var rangeValue = me.map(adcValue, adcMin, 
- 					adcMax, me.min, me.max, me.step);
+ 				var rangeValue = me.map(adcValue, me.POTADCMIN, 
+ 					me.POTADCMAX, me.min, me.max, me.step);
 
- 				// If pot value changes
- 				//if (rangeValue != me.value) {
- 					me.value = rangeValue;
- 					// Call physical input changed
-	  			me.oninput();
- 				//}
+				me.value = rangeValue;
+  			me.oninput();
 
 	  	}
 
@@ -68,9 +61,9 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
   connectedCallback() {
     console.log("Static Slider Ready");
 
-    // Initialize I2C 
-    Wire = new Linuxduino.Wire();
-    Wire.begin("/dev/i2c-1"); // TODO: add a attribute for this and the adc number. 
+    // Initialize I2C
+    this.Wire = new Linuxduino.Wire();
+    this.Wire.begin("/dev/i2c-1"); // TODO: add a attribute for this and the adc number. 
 
     this.readADC(1000);
   }

@@ -7,9 +7,9 @@ var fs = require('fs');
 var $ = require('jquery');
 
 // Start Amalgam Compiler on Load
-window.onload =  function () {
+document.addEventListener("DOMContentLoaded", function(event) {
   compileToPhysicalHTML();
-}
+});
 
 // Translate HTML to Physical HTML from CSS
 function compileToPhysicalHTML () {

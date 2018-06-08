@@ -1,9 +1,3 @@
-var Linuxduino = require("linuxduino");
-
-Linuxduino.onRuntimeInitialized = function() {
-  customElements.define('physical-button', PHYSCIAL_BUTTON);
-}
-
 class PHYSICAL_BUTTON extends HTMLElement {
 
  constructor () {
