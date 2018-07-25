@@ -1,4 +1,4 @@
-class PHYSCIAL_STATIC_RANGE extends HTMLElement {
+class PHYSICAL_STATIC_RANGE extends HTMLElement {
 
 	constructor () {
 		super();
@@ -10,6 +10,7 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
 		this.POTADCMIN = 19;
 		this.POTADCMAX = 1084;
 		this.Wire = null;
+		this.i2cport = null;
 
 		// Libraries
 		this.ADC = require("Adafrui_ADS1015");
@@ -55,7 +56,7 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
 
 	// Monitor the 'name' attribute for changes.
   static get observedAttributes() {
-  	return ['min', 'max', 'step', 'value']; 
+  	return ['min', 'max', 'step', 'value', 'i2cport']; 
   }
 
   connectedCallback() {
@@ -63,7 +64,12 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
 
     // Initialize I2C
     this.Wire = new Linuxduino.Wire();
-    this.Wire.begin("/dev/i2c-1"); // TODO: add a attribute for this and the adc number. 
+    if (this.i2cport != null)
+    	this.Wire.begin(this.i2cport);
+    else {
+    	console.error("i2cport not defined in CSS");
+    	return;
+    }
 
     this.readADC(1000);
   }
@@ -80,6 +86,8 @@ class PHYSCIAL_STATIC_RANGE extends HTMLElement {
     } else if (attr == 'value') {
     	this.value = parseFloat(newValue);
     	// Not supported as it shoud behave, there is no way to set a potentiometer to a specific value at start
+    } else if (attr == 'i2cport') {
+    	this.i2cport = newValue;
     }
   }
 

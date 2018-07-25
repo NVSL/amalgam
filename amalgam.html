@@ -18,12 +18,14 @@
 <script src="./test-physical-submit.js"></script> -->
 
 <script>
+	if (typeof require === 'function') {
 		var Linuxduino = require("linuxduino");
 
 		Linuxduino.onRuntimeInitialized = function() {
 			console.log("WASM loaded");
 		  customElements.define('physical-button', PHYSICAL_BUTTON);
-		  customElements.define('physical-static-range', PHYSCIAL_STATIC_RANGE);
-		  customElements.define('physical-dynamic-range', PHYSCIAL_DYNAMIC_RANGE);	  
+		  customElements.define('physical-static-range', PHYSICAL_STATIC_RANGE);
+		  customElements.define('physical-dynamic-range', PHYSICAL_DYNAMIC_RANGE); 
 		}
+	}
 </script>

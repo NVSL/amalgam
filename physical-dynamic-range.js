@@ -1,4 +1,4 @@
-class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
+class PHYSICAL_DYNAMIC_RANGE extends HTMLElement {
 
 	constructor () {
 		super();
@@ -16,6 +16,7 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
     this.BKW = 1;
     this.STOP = 2;
     this.Wire = null;
+    this.i2cport = null;
 
     // Libraries
     this.ADC = require("Adafrui_ADS1015");
@@ -134,15 +135,20 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
 
 	// Monitor the 'name' attribute for changes.
   static get observedAttributes() {
-  	return ['min', 'max', 'step', 'value', 'motora', 'motorb', 'touch']; 
+  	return ['min', 'max', 'step', 'value', 'motora', 'motorb', 'touch', 'i2cport']; 
   }
 
   connectedCallback() {
     console.log("Dynamic Slider Ready");
 
-    // Initialize I2C 
+    // Initialize I2C
     this.Wire = new Linuxduino.Wire();
-    this.Wire.begin("/dev/i2c-1"); // TODO: add a attribute for this and the adc number. 
+    if (this.i2cport != null)
+      this.Wire.begin(this.i2cport);
+    else {
+      console.error("i2cport not defined in CSS");
+      return;
+    }
 
     // Initialize gpios
     Linuxduino.pinMode(this.motora, Linuxduino.OUTPUT); //pinMotorOne
@@ -181,7 +187,10 @@ class PHYSCIAL_DYNAMIC_RANGE extends HTMLElement {
     	this.motorb = parseInt(newValue);
     } else if (attr == 'touch') {
     	this.touch = parseInt(newValue);
+    } else if (attr == 'i2cport') {
+      this.i2cport = newValue;
     }
+
   }
 
 }

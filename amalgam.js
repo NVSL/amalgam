@@ -2,29 +2,46 @@
 // ###  Amalgam Compiler
 // ###
 
-var css = require('css');
-var fs = require('fs');
-var $ = require('jquery');
+
+var css = null;
+var $ = null;
 
 // Start Amalgam Compiler on Load
 document.addEventListener("DOMContentLoaded", function(event) {
+  if (typeof require != 'function') return;
+  css = require('css');
+  $ = require('jquery');
   compileToPhysicalHTML();
 });
 
 // Translate HTML to Physical HTML from CSS
-function compileToPhysicalHTML () {
+async function compileToPhysicalHTML () {
   // Get Physical Components
-  var physcialCSSDic = getPhysicalHTML();
+  var physcialCSSDic = await getPhysicalHTML();
   for ([selector, physicalHTML] of Object.entries(physcialCSSDic)) {
     console.log(physicalHTML)
     // Translate
+
+    // Check this JS vs HTML attribute inheritance problem.
+    var oninputFunc = null;
+    if (typeof $(selector)[0].oninput === 'function') {
+      //console.log("YES");
+      oninputFunc = $(selector)[0].oninput;
+    }
+
+    // Replace the old tag with the new physical tag
     $(selector).replaceWith(physicalHTML);
+
+    if (oninputFunc != null) {
+      $(selector)[0].oninput = oninputFunc;
+    }
+    
   }
 }
 
 
 // Parses CSS files to look for physical CSS selectors
-function getPhysicalHTML() {
+async function getPhysicalHTML() {
   var dicCSSVars = {};
   var dicPhyComp = {};
   var dicPhyCSS  = {};
@@ -36,7 +53,7 @@ function getPhysicalHTML() {
     //console.log(sheet);
     if (sheet.href == null) break;
     var cssFile = sheet.href.replace("file://","");
-    var fullDic = parseCSS(cssFile);
+    var fullDic = await parseCSS(cssFile);
     if (fullDic == null) {
       console.error("Amlagam compiler Failed");
       return;
@@ -54,7 +71,7 @@ function getPhysicalHTML() {
     //console.log(sheet);
     if (sheet.href == null) break;
     var cssFile = sheet.href.replace("file://","");
-    var fullDic = parseCSS(cssFile);
+    var fullDic = await parseCSS(cssFile);
     if (fullDic == null) {
       console.error("Amlagam compiler Failed");
       return;
@@ -77,8 +94,8 @@ function getPhysicalHTML() {
 }
 
 
-function parseCSS(cssFilePath) {
-  cssFile = readFile(cssFilePath);
+async function parseCSS(cssFilePath) {
+  let cssFile = await $.get(cssFilePath);
   if (cssFile == undefined) return null;
   var ast = css.parse(cssFile, { source: cssFile });
   var cssstring = css.stringify(ast, { sourcemap: true });
@@ -110,7 +127,7 @@ function parseCSS(cssFilePath) {
 
       if (property == "hardware") {
          isPhysical = true;
-         var res = value.replace(/\)/g,"").replace(/var\(/g,"").split("(");
+         var res = value.replace(/\)/g,"").replace(/var\(/g,"").replace(/url\(/g,"").replace(/\"/g,"").split("(");
          if (res.length < 1) {
             console.error("Error compiling css physical property: "+
               property+":"+value + ", wrong format");
@@ -124,6 +141,7 @@ function parseCSS(cssFilePath) {
               //console.log(attributes);
               for (var x=0; x < attributes.length; x++) {
                 var attr = attributes[x].split(":");
+                console.log(attr);
                 if (attr.length != 2) {
                   console.error("Error compiling "+attributes[x]+" of css physical property: "+
                     property+":"+value);
@@ -159,26 +177,6 @@ function parseCSS(cssFilePath) {
   return [physicalVars, physicalComp];
 }
 
-
-function readFile(file) {
-  try {
-    var src = fs.readFileSync(file, 'utf8');
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      console.error('Error compiling, file not found:'+file);
-    } else {
-      throw err;
-    }
-    return undefined;
-  }
-  // normalize line endings
-  src = src.replace(/\r\n/, '\n');
-  // remove trailing newline
-  src = src.replace(/\n$/, '');
-
-  return src;
-}
-
 function getAllAttributes(selector) {
   var attributes = '';
   $(selector).each(function() {
@@ -192,7 +190,3 @@ function getAllAttributes(selector) {
   });
   return attributes;
 }
-
-
-module.exports.compileToPhysicalHTML = compileToPhysicalHTML;
-module.exports.getPhysicalHTML = getPhysicalHTML;
