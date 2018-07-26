@@ -19,23 +19,31 @@ async function compileToPhysicalHTML () {
   // Get Physical Components
   var physcialCSSDic = await getPhysicalHTML();
   for ([selector, physicalHTML] of Object.entries(physcialCSSDic)) {
-    console.log(physicalHTML)
-    // Translate
 
-    // Check this JS vs HTML attribute inheritance problem.
-    var oninputFunc = null;
-    if (typeof $(selector)[0].oninput === 'function') {
-      //console.log("YES");
-      oninputFunc = $(selector)[0].oninput;
+    // Find all javascript user defiend events in the old tag
+    var userEvents = $(selector)[0]; // Get old tag
+    var dicUserEvents = {};
+    for (var key in userEvents) {
+      if (typeof userEvents[key] === 'function' 
+        && !userEvents[key].toString().includes("[native code]") 
+        && !(key in $(selector)[0].attributes)) {
+        // Javacript user defined javascritp events
+        //console.log(key+":"+userEvents[key]);
+        dicUserEvents[key] = userEvents[key];
+      }
     }
 
     // Replace the old tag with the new physical tag
     $(selector).replaceWith(physicalHTML);
 
-    if (oninputFunc != null) {
-      $(selector)[0].oninput = oninputFunc;
+    // Copy javascript user defined event to the new physical tag
+    for ([attribute, value] of Object.entries(dicUserEvents)) {
+      $(selector)[0][attribute]=value;
     }
-    
+
+    // Print new tag
+    console.log(physicalHTML)
+
   }
 }
 
@@ -141,7 +149,6 @@ async function parseCSS(cssFilePath) {
               //console.log(attributes);
               for (var x=0; x < attributes.length; x++) {
                 var attr = attributes[x].split(":");
-                console.log(attr);
                 if (attr.length != 2) {
                   console.error("Error compiling "+attributes[x]+" of css physical property: "+
                     property+":"+value);
