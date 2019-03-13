@@ -1,0 +1,233 @@
+/* Source: http://tutorialzine.com/2013/06/digital-scale/ */
+
+/*-------------------------
+	Simple reset
+--------------------------*/
+
+
+*{
+	margin:0;
+	padding:0;
+}
+
+
+/*-------------------------
+	General Styles
+--------------------------*/
+
+
+html{
+	overflow:hidden;
+}
+
+body{
+	font:15px/1.3 Arial, sans-serif;
+	color: #4f4f4f;
+	z-index:1;
+}
+
+
+
+/*-------------------------
+	The scales
+--------------------------*/
+
+
+#scale{
+	width:100%-5px;
+	padding:0px;
+	margin:5px;
+	position:relative;
+}
+
+#scale .display{
+	text-align:left;
+	padding: 1px 10px 0px;
+	border-radius:0px;
+	position:relative;
+	height: 95px;
+}
+
+
+/*-------------------------
+	Light color theme
+--------------------------*/
+
+
+#scale.light{
+	background-color:#f3f3f3;
+	color:#272e38;
+}
+
+#scale.light:after{
+	box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+
+#scale.light .display{
+	background-color:#dddddd;
+	box-shadow:0 1px 1px rgba(0,0,0,0.08) inset, 0 2px 3px #222222;
+}
+
+
+/*-------------------------
+	Dark color theme
+--------------------------*/
+
+
+/*#scale.dark{
+	background-color:#272e38;
+	color:#cacaca;
+}
+
+#scale.dark:after{
+	box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+#scale.dark .digits div span{
+	background-color:#cacaca;
+	border-color:#cacaca;	
+}
+
+#scale.dark .display{
+	background-color:#0f1620;
+	box-shadow:0 1px 1px rgba(0,0,0,0.08) inset, 0 1px 1px #2d3642;
+}
+
+#scale.dark .digits div.dots:before,
+#scale.dark .digits div.dots:after{
+	background-color:#cacaca;
+}
+*/
+/*-------------------------
+	Elements in Display
+--------------------------*/
+
+#elements{
+    width: 100%;
+    /*align-items: center;*/
+}
+
+#elements .weight{
+	border-style: none groove none none;
+}
+
+#elements .price{
+	border-style: none groove none none;
+}
+#elements .total{
+	border-style: none none none none;
+}
+
+/*-------------------------
+	The Digits
+--------------------------*/
+
+
+.digits span{
+	font-family: 'Segment7Standard';
+	font-size:50px;
+	text-align:right;
+	width: 100%;
+	height:auto;
+	display:inline-block;
+}
+
+/*-------------------------
+	Text
+--------------------------*/
+
+
+.text{
+	font-size:24px;
+	font-weight:bold;
+	left:0;
+	height:30px;
+	text-align:left;
+}
+
+
+.text span{
+	opacity:1;
+	padding:0 0px;
+}
+
+/*-------------------------
+	TARE
+--------------------------*/
+
+.tare {
+	color: red;
+	text-align:right;
+	margin-left: 20px;
+	position: absolute;
+	z-index: 1;
+}
+
+/*-------------------------
+	Scroll container
+--------------------------*/
+
+.scroll-container {
+  overflow-x: scroll;
+  height: 100vh;
+  padding:10px;
+}
+
+md-grid-list {
+  width: 100%;
+}
+
+md-grid-tile {
+  box-shadow:0 1px 1px rgba(0,0,0,0.08) inset, 0 2px 3px #222222;
+}
+
+
+.productTitle {
+	background: #ffffff;
+	height: 50px;
+}
+
+.productTitle figcaption {
+	width: 100%;
+}
+
+.productText{
+	color: #000000;
+	font-size:20px;
+	text-align:left;
+	padding-left: 20px;
+}
+
+.productPrice{
+	color: red;
+	font-size:20px;
+	text-align:right;
+	padding-right: 20px
+}
+
+/*-------------------------
+	Side Navegation bar
+--------------------------*/
+
+md-sidenav, 
+md-sidenav.md-locked-open, 
+md-sidenav.md-closed.md-locked-open-add-active {
+    min-width: 100px !important;
+    width: 85vw !important;
+    max-width: 120px !important;
+    padding-left: 5px;
+    padding-top: 10px;
+}
+
+
+
+.md-raised {
+  height: 80px !important;
+  font-size:25px;
+  color: white !important;
+	background: #3F51B5 !important;
+}
+
+ .md-raised:not([disabled]):hover {
+    background-color: transparent;
+  }

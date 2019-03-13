@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>    
+<head>
+  <title>Youtube Physical Player</title>
+
+
+  <link rel="stylesheet" href="app.css">
+  <link rel="import" href="amalgam/amalgam.html">
+
+</head>
+
+<body>
+
+    <div id="video-placeholder"></div>
+    <button onclick="playPause()" id="playPause">Play/Pause</button>
+    <button onclick="prev()" id="prev">Prev</button>
+    <button onclick="next()" id="next">Next</button>
+    <input type="range" min="0" max="100" step="1" value="10" id="slider">
+    <input type="range" min="0" max="10" step="1" value="0" id="progressBar">
+    
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+
+      var player = null;
+      var playerState = null;
+
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('video-placeholder', {
+          width: 600,
+          height: 475,
+          videoId: 'DCLrDnZO_0E',
+          playerVars: {
+            rel: 0,
+            color: 'white',
+            playlist: 'dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0'
+          },
+          events: {
+            onReady: youtubeInit,
+            onStateChange: onPlayerStateChange
+          }
+        });
+      }
+
+      function youtubeInit () {       
+        console.log("Youtube Init");
+        var progressBar = document.getElementById("progressBar");
+        progressBar.setAttribute("max", `${player.getDuration()}`);
+        // Chrome bug: this way it doesn't trigger webcomponent attribute-change
+        //progressBar.max = player.getDuration();
+        playerState = YT.PlayerState.PAUSED;
+        player.unMute(); // unMute by Defalut
+
+        setInterval(function () {
+          updateProgressBar();
+        }, 1000);
+      }
+
+      function updateProgressBar() {
+        var progressBar = document.getElementById("progressBar");
+        progressBar.setAttribute("value", `${player.getCurrentTime()}`);
+        // Chrome bug: this way it doesn't trigger webcompoent attribute-change
+        //progressBar.value = player.getCurrentTime(); 
+      }
+
+      function formatTime(time){
+        time = Math.round(time);
+        var minutes = Math.floor(time / 60),
+        seconds = time - minutes * 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        return minutes + ":" + seconds;
+      }
+
+      function onPlayerStateChange (event) {
+        playerState = event.data;
+        if (playerState == YT.PlayerState.PLAYING) {
+          var progressBar = document.getElementById("progressBar");
+          progressBar.setAttribute("max", `${player.getDuration()}`);
+          // Chrome bug: this way it doesn't trigger webcomponent attribute-change
+          //progressBar.max = player.getDuration();
+        }
+      }
+
+      function playPause () {
+        if (playerState == YT.PlayerState.PAUSED) {
+          player.playVideo();
+        } else {
+          player.pauseVideo();
+        }
+      }
+
+      function prev () {
+        player.previousVideo();
+      }
+
+      function next () {
+        player.nextVideo();
+      }
+
+      var slider = document.getElementById("slider");
+      slider.oninput = function() {
+        if (typeof player.setVolume === 'function' && player != null) {
+          player.setVolume(this.value);
+        }
+      }
+
+      var progressBar = document.getElementById("progressBar");
+      progressBar.oninput = function() {
+        if (typeof player.seekTo === 'function' && player != null) {
+          player.seekTo(this.value);
+        }
+      }
+
+
+    </script>
+</body>
+</html>
+

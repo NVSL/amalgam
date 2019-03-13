@@ -1,0 +1,30 @@
+#video-placeholder {
+  width: 100%;
+}
+
+#playPause {
+  hardware: physical-button(gpio:var(--gpio5));
+}
+
+#prev {
+  hardware: physical-button(gpio:var(--gpio6));
+}
+
+#next {
+  hardware: physical-button(gpio:var(--gpio12));
+}
+
+#slider {
+  hardware: physical-pot(i2c-port:url("/dev/i2c-1"), i2c-addr:0x40);
+}
+
+#progressBar {
+  width: 99%;
+  hardware: physical-motorized-pot(motora:var(--gpio23), motorb:var(--gpio24), touch:var(--gpio25), i2c-addr:0x48, i2c-port:url("/dev/i2c-1"));
+}
+
+body {
+  margin: 0;
+  background-color: black;
+}
+

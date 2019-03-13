@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>Responsive Audio Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="./jquery.min.js"></script>
+  <script src="./rythm.min.js"></script>
+  <link rel="stylesheet" href="app.css">
+  <link rel="import" href="amalgam/amalgam.html">
+
+  <style>
+    .rythm {
+      min-width: 40px;
+      min-height: 40px;
+      border-radius: 10px;
+      display: flex;
+      font-size: 3em;
+      align-items: center;
+      justify-content: center;
+      margin: 5px 10px;
+    }
+
+    .rythm.color1 {
+      background-color: blue;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <!-- Speakers App -->
+  <button onclick="pausePlay()" id="playPause"> >|| </button>
+  <button onclick="prevSong()" id="prev">Prev</button>
+  <button onclick="nextSong()" id="next">Next</button>
+  <div class="rythm color1"></div>
+  <input type="range" min="0" max="1" step="0.1" value="1" id="slider">
+  <div class="rythm twist1">♫</div>
+  <div class="rythm twist2">♫</div>
+
+  <!-- Speakers App short -->
+<!--   <button onclick="playPause()" id="playPause" 
+    style="hardware: physical-button( gpio: var(--gpio5) )"> playPause 
+  </button>  
+  <button onclick="prevSong()" id="prev"
+    style="hardware: physical-button( gpio: var(--gpio6) )"> Prev
+  </button>  
+  <button onclick="nextSong()" id="next"
+    style="hardware: physical-button( gpio: var(--gpio12) )"> Next 
+  </button> 
+  <input type="range" min="0" max="1" step="0.1" value="1" id="slider"
+    style="hardware: physical-pot( adc-channel: 1, i2c-port: url('/dev/i2c-1'),
+    i2c-addr: 0x48"> 
+  <div class="rythm color1" 
+    style="hardware: physical-rgb-led( spi-port: url('/dev/spidev0.0') )">
+  </div> 
+  <div class="rythm twist1"
+    style="hardware: physical-servo-motor( servo-channel: 0, i2c-port: url('/dev/i2c-1' ), i2c-addr: 0x48 )">
+  </div> 
+  <div class="rythm twist2"
+    style="hardware: physical-servo-motor( servo-channel: 3, i2c-port: url('/dev/i2c-1' ),  i2c-addr: 0x40 )">
+  </div> 
+ -->
+  
+
+<script>
+
+  // Get Songs in the directory
+  var fs = require('fs');
+  var files = fs.readdirSync('/home/pi/app-speakers/songs/');
+  //var files = fs.readdirSync('./songs/');
+  var paused = true;
+
+  var rythm = new Rythm();
+  
+  // Background color
+  rythm.addRythm('color1', 'color', 0, 10, {
+    from: [0,0,255],
+    to:[255,0,0]
+  })
+  // Twist 1
+  rythm.addRythm('twist1', 'twist', 0, 10, {
+    min: 20,
+    max: 170
+  })
+  // Twist 2
+  rythm.addRythm('twist2', 'twist', 0, 10, {
+    min: 170,
+    max: 20
+  })
+
+  // Create songs index:
+  var index = 0;
+  // Start playing the fist song
+  rythm.setMusic("songs/"+files[index]);
+  rythm.player.audio.volume = 0.4;
+  paused = true; // Press Play button to start songs.
+  
+
+  rythm.player.audio.addEventListener('ended',function() {
+    console.log('Song Ended...');
+
+    //Play another song.
+    if (index == files.length-1) {
+      index = 0;
+    } else {
+      index++;
+    }
+    var volume  = rythm.player.audio.volume;
+    rythm.setMusic("songs/"+files[index]);
+    rythm.player.audio.volume = volume;
+    rythm.start();
+    paused = false;
+  });
+
+  var slider = document.getElementById("slider");
+  slider.oninput = function() {
+    //console.log("SLIDER CHANGE="+this.value);
+    rythm.player.audio.volume = this.value;
+  }
+
+
+  function nextSong() {
+    //Play next song.
+    console.log("Next Song");
+    if (index == files.length-1) {
+      index = 0;
+    } else {
+      index++;
+    }
+    var volume  = rythm.player.audio.volume;
+    rythm.stop();
+    rythm.setMusic("songs/"+files[index]);
+    rythm.player.audio.volume = volume;
+    rythm.start();
+    paused = false;
+  }
+
+  function prevSong() {
+    // Play previuous Song
+    console.log("Prev Song");
+    if (index==0) {
+      index=0;
+    } else {
+      index--;
+    }
+    var volume  = rythm.player.audio.volume;
+    rythm.stop();
+    rythm.setMusic("songs/"+files[index]);
+    rythm.player.audio.volume = volume;
+    rythm.start();
+    paused = false;
+  }
+
+  function pausePlay () {
+    console.log("PlayPause");
+    if (paused == true) {
+      rythm.start(); 
+       paused = false;   
+    } else {
+      rythm.stop();
+       paused = true;
+    }
+  }
+
+  // Chrome bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1428246
+  // setInterval(changeBackgroundColors, 5000);
+  // function changeBackgroundColors() {
+  //   console.log("change color")
+  //   var fromRed = 0;
+  //   var fromGreen = 0;
+  //   var fromBlue = 0;
+  //   var toRed = 0; //Math.round(Math.random()) * 255;
+  //   var toGreen = 0; //Math.round(Math.random()) * 255;
+  //   var toBlue = 255; //Math.round(Math.random()) * 255;
+  //   rythm.addRythm('color1', 'color', 0, 150, {
+  //     from: [fromRed,fromGreen,fromBlue],
+  //     to:[toRed,toGreen,toBlue]
+  //   })
+  // }
+
+
+</script>
+
+
+</body>
+
+</html>

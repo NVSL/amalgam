@@ -1,0 +1,11 @@
+{
+  "name": "app-one",
+  "version": "0.1.0",
+  "main": "main.js",
+  "dependencies": {
+    "css": "^2.2.3",
+    "fs": "0.0.1-security",
+    "jquery": "^3.3.1",
+    "linuxduino": "^0.1.8"
+  }
+}

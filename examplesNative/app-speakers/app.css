@@ -1,0 +1,37 @@
+#video-placeholder {
+  width: 100%;
+}
+
+#playPause {
+  hardware: physical-button(gpio:var(--gpio5));
+}
+
+#prev {
+  hardware: physical-button(gpio:var(--gpio6));
+}
+
+#next {
+  hardware: physical-button(gpio:var(--gpio12));
+}
+
+#slider {
+  hardware: physical-pot(i2c-port:url("/dev/i2c-1"), i2c-addr:0x48);
+}
+
+.color1 {
+  hardware: physical-rgb-led(spi-port:url("/dev/spidev0.0"));
+}
+
+.twist1 {
+  hardware: physical-servo-motor(servo-channel: 0, i2c-port:url("/dev/i2c-1"), i2c-addr: 0x40);
+}
+
+.twist2 {
+  hardware: physical-servo-motor(servo-channel: 3, i2c-port:url("/dev/i2c-1"),  i2c-addr: 0x40);
+}
+
+body {
+  margin: 0;
+  background-color: black;
+}
+

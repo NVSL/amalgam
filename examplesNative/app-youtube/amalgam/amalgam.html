@@ -1,0 +1,35 @@
+<!-- ###  Board Pinout Names -->
+<link rel="stylesheet" href="boards_pinout/raspberrypi_pinout.css">
+
+<!-- ### Physical CSS (Can also be defined here) -->
+<!-- <link rel="stylesheet" href="./physical.css"> -->
+
+<!-- ### Amalgam compiler -->
+<script src="./amalgam.js"></script>
+
+<!-- ### Physical Web Components (Add more if needed) -->
+<script src="./physical-button.js"></script>
+<script src="./physical-pot.js"></script>
+<script src="./physical-motorized-pot.js"></script>
+<script src="./physical-rgb-led.js"></script>
+<script src="./physical-servo-motor.js"></script>
+
+<!-- ### Test Physical Web Components (Add more if needed) -->
+<!-- <script src="./test-physical-button.js"></script>
+<script src="./test-physical-submit.js"></script> -->
+
+<script>
+	if (typeof require === 'function') {
+		var Linuxduino = require("linuxduino");
+
+		Linuxduino.onRuntimeInitialized = function() {
+		  console.log("WASM loaded");
+		  customElements.define('physical-button', PHYSICAL_BUTTON);
+		  customElements.define('physical-pot', PHYSICAL_POT);
+		  customElements.define('physical-motorized-pot', PHYSICAL_MOTORIZED_POT); 
+		  customElements.define('physical-rgb-led', PHYSICAL_RGB_LED); 
+		  customElements.define('physical-servo-motor', PHYSICAL_SERVO_MOTOR); 
+
+		}
+	}
+</script>

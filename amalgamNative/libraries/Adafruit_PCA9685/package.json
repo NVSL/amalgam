@@ -1,0 +1,23 @@
+{
+    "author": "Jorge Garza <jgarzagu@ucsd.edu>",
+    "name": "Adafruit_PCA9685",
+    "description": "Interface for the Adafruit PCA9685 I2C Servo board",
+    "version": "0.1.8",
+    "keywords": [ "arduino", "linux", "adc", "raspberry", "pi"],
+    "repository": {
+        "type": "git",
+        "url": "https://todo"
+    },
+    "bugs": "https://todo",
+    "license": "MIT",
+    "engines": {
+        "node": ">=8.0.0"
+    },
+    "dependencies": {
+        "linuxduino": "^0.1.8"
+    },
+    "main": "Adafruit_PCA9685.js",
+    "files": [
+        "lib"
+    ]
+}
