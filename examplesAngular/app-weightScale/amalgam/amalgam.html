@@ -1,0 +1,30 @@
+<!-- ###  Board Pinout Names -->
+<link rel="stylesheet" href="boards_pinout/raspberrypi_pinout.css">
+
+<!-- ### Physical CSS (Can also be defined here) -->
+<!-- <link rel="stylesheet" href="./physical.css"> -->
+
+<!-- ### Amalgam compiler -->
+<script src="./amalgam.js"></script>
+
+<!-- Boot Sequence:
+1. Linuxduino WebAssembly
+2. Angular Compiler
+3. Angular App starts
+ -->
+<script>
+	if (typeof require === 'function') {
+		var Linuxduino = require("linuxduino");
+
+		Linuxduino.onRuntimeInitialized = function() {
+			console.log("WASM loaded");
+			initAmalgamCompiler(); // After compilation Angular app starts
+		}
+	}
+
+	var amalgam = angular.module("amalgam", []);
+</script>
+
+<!-- ### Physical Web Components (Add more if needed) -->
+<script src="./physical-span.js"></script>
+<script src="./physical-weight-sensor.js"></script>

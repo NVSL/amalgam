@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
   if (typeof require != 'function') return;
   css = require('css');
   $ = require('jquery');
+  console.log("Compiling CSS");
   compileToPhysicalHTML();
 });
 
@@ -45,6 +46,8 @@ async function compileToPhysicalHTML () {
     console.log(physicalHTML)
 
   }
+
+  console.log("Compiling END");
 }
 
 
@@ -58,8 +61,7 @@ async function getPhysicalHTML() {
   // get CSS variables and Physical Components
   for (var i=0; i<document.styleSheets.length; i++) {
     var sheet = document.styleSheets[i];
-    //console.log(sheet);
-    if (sheet.href == null) break;
+    if (sheet.href == null) continue;
     var cssFile = sheet.href.replace("file://","");
     var fullDic = await parseCSS(cssFile);
     if (fullDic == null) {
@@ -77,7 +79,7 @@ async function getPhysicalHTML() {
   for (var i=0; i<importDocument.styleSheets.length; i++) {
     var sheet = importDocument.styleSheets[i];
     //console.log(sheet);
-    if (sheet.href == null) break;
+    if (sheet.href == null) continue;
     var cssFile = sheet.href.replace("file://","");
     var fullDic = await parseCSS(cssFile);
     if (fullDic == null) {
