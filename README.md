@@ -9,7 +9,7 @@ After the folder is added to the proyect and renamed as amalgam it can them be i
 ````
 
 ## Examples native
-**./examplesNative** contain two examples, a Physical Youtube Player and a Physical Dancing Speaker. 
+**./examplesNative** contains two examples, a Physical Youtube Player and a Physical Dancing Speaker. 
 
 ### > Physical Youtube Player
 [Video](https://youtu.be/FK0AlLZHyIE)
