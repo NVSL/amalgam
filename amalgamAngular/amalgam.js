@@ -6,14 +6,23 @@
 var css = null;
 var $ = null;
 
-// Start Amalgam Compiler on Load
-document.addEventListener("DOMContentLoaded", function(event) {
+// Start Amalgam Compiler on Load (Automatic)
+// document.addEventListener("DOMContentLoaded", function(event) {
+//   if (typeof require != 'function') return;
+//   css = require('css');
+//   $ = require('jquery');
+//   console.log("Compiling CSS");
+//   compileToPhysicalHTML();
+// });
+
+// Start Amalgam Compiler on Load (After Linuxduino)
+function initAmalgamCompiler () {
   if (typeof require != 'function') return;
   css = require('css');
   $ = require('jquery');
   console.log("Compiling CSS");
   compileToPhysicalHTML();
-});
+};
 
 // Translate HTML to Physical HTML from CSS
 async function compileToPhysicalHTML () {
@@ -48,6 +57,10 @@ async function compileToPhysicalHTML () {
   }
 
   console.log("Compiling END");
+
+  // Start Angular App
+  angular.bootstrap(document, ['myApp']);
+  
 }
 
 
@@ -158,7 +171,7 @@ async function parseCSS(cssFilePath) {
                 } else {
                   var attrName  = attr[0];
                   var attrValue = attr[1];
-                  physicalAttributes = physicalAttributes+" "+attrName+"="+"'"+attrValue+"'";
+                  physicalAttributes = physicalAttributes+" "+attrName+"="+"\""+attrValue+"\"";
                 }
               }
             }
@@ -193,7 +206,7 @@ function getAllAttributes(selector) {
       // this.attributes is not a plain object, but an array
       // of attribute nodes, which contain both the name and value
       if(this.specified) {
-        attributes = attributes + " " + this.name+"="+"'"+this.value+"'";
+        attributes = attributes + " " + this.name+"="+"\""+this.value+"\"";
       }
     });
   });

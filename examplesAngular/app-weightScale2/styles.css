@@ -254,3 +254,36 @@ md-sidenav.md-closed.md-locked-open-add-active {
 #weightSensor {
 	hardware: physical-weight-sensor;
 }
+
+#weightDigits {
+	hardware: physical-digits(din-gpio:17, cs-gpio:27 clk-gpio:22);
+}
+
+#priceDigits {
+	hardware: physical-digits(din-gpio:5, cs-gpio:6 clk-gpio:13);
+}
+
+#totalDigits {
+	hardware: physical-digits(din-gpio:16, cs-gpio:20 clk-gpio:21);
+}
+
+#buttonZero {
+	hardware: physical-button(gpio:19);
+}
+
+#buttonTare {
+	hardware: physical-button(gpio:26);
+}
+
+/*Remove other content */
+#scale {
+	display: none;
+}
+
+.container {
+	display: none;
+}
+
+.sidenav {
+	display: none !important;;
+}

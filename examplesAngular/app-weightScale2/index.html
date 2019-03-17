@@ -3,37 +3,77 @@
 <head>
   <title>Weight Scale Version 2</title>
   
-  <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/segment7" type="text/css"/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
-  <link rel='stylesheet prefetch' href='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.6/angular-material.css'>
-  <link href="./styles.css" rel="stylesheet" />
+  <!-- <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/segment7" type="text/css"/> -->
+  <link rel="stylesheet" href="ext/css.css">
+  <link rel='stylesheet prefetch' href='ext/angular-material.css'>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.min.js'></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.min.js'></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-aria.min.js'></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-messages.min.js'></script>
-  <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js'></script>
-  <script src='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.6/angular-material.js'></script>
+  <script src="ext/angular.min.js"></script>
+  <script src='ext/angular-animate.min.js'></script>
+  <script src='ext/angular-route.min.js'></script>
+  <script src='ext/angular-aria.min.js'></script>
+  <script src='ext/angular-messages.min.js'></script>
+  <script src='ext/svg-assets-cache.js'></script>
+  <script src='ext/angular-material.js'></script>
+
+  <!-- Amalgam -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="import" href="amalgam/amalgam.html">
 
 </head>
 <body>
+    <div ng-controller="myCtrl">
 
-    <div ng-app="myApp" ng-controller="myCtrl">
+      <div class="container">
+        <span id="lcdDisplay" ng-bind="productName+'\nTotal: '+((productWeight-zeroWeight-currentTare)*productPrice | number : 2)"></span>
+        <md-slider min="0" max="10" step="0.5" ng-model="productWeight" aria-label="blue" class="md-primary" id="weightSensor" ></md-slider>
+      </div>
 
-      <!-- Phisical Web Components -->
-<!--       <physical-weight-sensor ng-model="productWeight"></physical-weight-sensor>
-      <physical-span ng-bind="productName+'\nTotal: '+((productWeight-zeroWeight-currentTare)*productPrice | number : 2)"></physical-span>
-      <physical-digits  din-gpio="17" cs-gpio="27" clk-gpio="22" ng-bind="(productWeight-zeroWeight-currentTare) | number : 2"></physical-digits>
-      <physical-digits  din-gpio="5" cs-gpio="6" clk-gpio="13" ng-bind="productPrice | number : 2"></physical-digits>
-      <physical-digits  din-gpio="16" cs-gpio="20" clk-gpio="21" ng-bind="(productWeight-zeroWeight-currentTare)*productPrice | number : 2"></physical-digits>
-      <physical-button gpio="19" ng-click="zeroClick()"></physical-button>
-      <physical-button gpio="26" ng-click="tareClick()"></physical-button> -->
 
-      <!-- TARE TEXT -->
-      <span class="tare" ng-style="tareStyle">TARE</span>
+      <!-- Weight Scale Interface -->
+      <div id="scale" class="light">
+        <div class="display">
+
+          <div id="elements" layout="row">
+
+            <div class="weight" flex>
+                  <div class="text">
+                    <span>Weight g</span>
+                    <span class="tare" ng-style="tareStyle">TARE</span>
+                  </div>
+                  <div class="digits">
+                    <span ng-bind="(productWeight-zeroWeight-currentTare) | number : 2" id="weightDigits"></span>
+                  </div>
+            </div>
+
+            <div class="price" flex>
+                  <div class="text">
+                    <span>Price $</span>
+                  </div>
+                  <div class="digits" >
+                    <span ng-bind="productPrice | number : 2" id="priceDigits"></span>
+                  </div>
+            </div>
+
+            <div class="total" flex>
+              <div class="text" >
+                <span>Total $</span>
+              </div>
+              <div class="digits">
+                <span ng-bind="(productWeight-zeroWeight-currentTare)*productPrice | number : 2" id="totalDigits"></span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
 
       <section layout="row">
+        <!-- NAV BAR -->
+        <md-sidenav class="sidenav" md-component-id="left" md-is-locked-open="true" flex="" >
+          <md-button class="md-raised" ng-click="zeroClick()" id="buttonZero">ZERO</md-button>
+          <md-button class="md-raised" ng-click="tareClick()" id="buttonTare">TARE</md-button>
+        </md-sidenav>
         <!-- PRODUCTS -->
         <div class="scroll-container" flex="">
           <md-grid-list md-cols="1" md-row-height="170px" md-gutter="1em">
@@ -54,416 +94,52 @@
 
     <script>
 
-        // var Linuxduino = require("linuxduino");
-        // var Serial = null;
+       // ## Angular app
+      
+      var app = angular.module('myApp', ['ngMaterial', 'amalgam']);
+      app.controller('myCtrl', function($scope, $compile, $interval, $timeout) {
 
-        // const DOUT = 2;
-        // const CLK  = 3;
-        // const CALIBRATION_FACTOR = 21680;
-        // var OFFSET = 0;
+        $scope.productWeight = 0;
+        $scope.zeroWeight = 0;
+        $scope.productPrice = 0;
+        $scope.currentTare = 0;
+        $scope.productName = "";
+        $scope.tareStyle = {'visibility': 'hidden'};
+        var hardwareWeight = 0;
+        
+        
 
-        // // enumerate the MAX7219 registers
-        // // See MAX7219 Datasheet, Table 2, page 7
-        // const MAX7219_REG_DECODE    = 0x09;  
-        // const MAX7219_REG_INTENSITY = 0x0A;
-        // const MAX7219_REG_SCANLIMIT = 0x0B;
-        // const MAX7219_REG_SHUTDOWN  = 0x0C;
-        // const MAX7219_REG_DISPTEST  = 0x0F;
+        $scope.tiles = [
+          { text: 'Chicken Box', price:25, image: 'img/chicken.jpg' },
+          { text: 'Meat', price:8, image: 'img/meat.jpg'},
+          { text: 'Avocado', price:1.75, image: 'img/avocado.jpg'},
+          { text: 'Tomato', price:0.85, image: 'img/tomato.jpg'},
+          { text: 'Limes', price:0.72, image: 'img/limes.jpg'}
+        ];
 
-        // const OFF = 0;  
-        // const ON  = 1;
+        $scope.productClick = function (index) {
+          console.log("Product Click: "+$scope.tiles[index].text);
+          $scope.productName = $scope.tiles[index].text;
+          $scope.productPrice = $scope.tiles[index].price;
+        }
 
-        // const DP = 0b10000000;  
-        // const NEG = 0x0A;
+        $scope.zeroClick = function() {
+          console.log("Zero Click");
+          $scope.zeroWeight = $scope.productWeight;
+        }
 
-        // // ## Load Cell
-
-        // function shiftIn(dataPin, clockPin) {
-        //   var value = 0;
-        //   var i;
-
-        //   for (i = 0; i < 8; ++i) {
-        //     Linuxduino.digitalWrite(clockPin, Linuxduino.HIGH);
-        //     Linuxduino.digitalWrite(clockPin, Linuxduino.LOW);
-        //     value |= Linuxduino.digitalRead(dataPin) << (7 - i);
-        //   }                                   
-        //   return value;
-        // }
-
-        // function scale_init (pin_data, pin_clk) {
-        //   Linuxduino.pinMode(pin_clk, Linuxduino.OUTPUT);
-        //   Linuxduino.pinMode(pin_data, Linuxduino.INPUT);
-        //   Linuxduino.digitalWrite(pin_clk, Linuxduino.LOW);
-        // }
-
-        // function scale_read(pin_data, pin_clk) {
-          
-        //   var value = 0;
-        //   var data = [0,0,0];
-        //   var filler = 0x00;
-
-        //   while ( !(Linuxduino.digitalRead(pin_data) == 0) );
-
-        //   // pulse the clock pin 24 times to read the data
-        //   data[2] = shiftIn(pin_data, pin_clk);
-        //   data[1] = shiftIn(pin_data, pin_clk);
-        //   data[0] = shiftIn(pin_data, pin_clk);
-
-        //   // set the channel and the gain factor for the next reading using the clock pin
-        //   var GAIN = 1; // It can be 1, 2 or 3
-        //   for (var i = 0; i < GAIN; i++) {
-        //     Linuxduino.digitalWrite(pin_clk, Linuxduino.HIGH);
-        //     Linuxduino.digitalWrite(pin_clk, Linuxduino.LOW);
-        //   }
-
-        //   // Return -1 if any of the values is not correct (In case of node)
-        //   if (data[0] == 255 || data[1] == 255 || data[2] == 255) {
-        //     return -1;
-        //   }
-
-        //   // Replicate the most significant bit to pad out a 32-bit signed integer
-        //   if (data[2] & 0x80) {
-        //     filler = 0xFF;
-        //   } else {
-        //     filler = 0x00;
-        //   }
-
-        //   // Construct a 32-bit signed integer
-        //   value = filler << 24
-        //       | data[2] << 16
-        //       | data[1] << 8
-        //       | data[0];
-
-        //   return value;
-        // }
-
-        // function scale_read_average (pin_data, pin_clk, times) {
-        //   var sum = 0;
-        //   for (var i = 0; i < times; i++) {
-        //     var value = scale_read(pin_data, pin_clk);
-        //     if (value == -1) {
-        //       i--; // Try again
-        //       //console.log("Skip");
-        //     }
-        //     sum += value;
-        //   }
-            
-        //   return sum / times;
-        // }
-
-        // function scale_get_offset (pin_data, pin_clk) {
-        //   return scale_read_average(pin_data, pin_clk, 10);
-        // }
-
-        // function scale_get_weight(pin_data, pin_clk, offset, scale) {
-        //   var raw_weight = (scale_read_average(pin_data, pin_clk, 2) - offset);
-        //   return (raw_weight / scale);
-        // }
-
-        // // ## LCD Display
-
-        // function writeLCDText (Serial, text) {
-
-        //   if (Serial == null) {
-        //     console.log("Serial is null");
-        //     return;
-        //   }
-
-        //   // Clear Display
-        //   Serial.write_byte(0xFE);  // send the special command
-        //   Serial.write_byte(0x01);  // send the clear screen command
-
-        //   var data = text.split("\n");
-
-        //   if (data[0] != undefined) {
-        //     // Move cursor to beginning of first line
-        //     Serial.write_byte(254); 
-        //     Serial.write_byte(128);
-        //     Serial.write(data[0]);
-        //   }
-
-        //   if (data[1] != undefined) {
-        //     // Move cursor to beginning of the second line
-        //     Serial.write_byte(254); 
-        //     Serial.write_byte(192);
-        //     Serial.write(data[1]);
-        //   }
-
-        // }
-
-        // // ## Digits 
-
-        // // ... write a value into a max7219 register 
-        // // See MAX7219 Datasheet, Table 1, page 6
-        // function set_register(DIN, CS, CLK, reg, value)  
-        // {
-        //     Linuxduino.digitalWrite(CS, Linuxduino.LOW);
-        //     Linuxduino.shiftOut(DIN, CLK, Linuxduino.MSBFIRST, reg);
-        //     Linuxduino.shiftOut(DIN, CLK, Linuxduino.MSBFIRST, value);
-        //     Linuxduino.digitalWrite(CS, Linuxduino.HIGH);
-        // }
-
-        // // ... reset the max7219 chip
-        // function resetDisplay(DIN, CS, CLK)  
-        // {
-        //     set_register(DIN, CS, CLK, MAX7219_REG_SHUTDOWN, OFF);   // turn off display
-        //     set_register(DIN, CS, CLK, MAX7219_REG_DISPTEST, OFF);   // turn off test mode
-        //     set_register(DIN, CS, CLK, MAX7219_REG_INTENSITY, 0x0D); // display intensity
-        // }
-
-        // function roundFtlStr(value, precision, spaces) {
-        //     var multiplier = Math.pow(10, precision || 0);
-        //     var result = ((Math.round(value * multiplier) / multiplier).toFixed(precision)).toString();
-        //     var digits = result.split('.');;
-        //     if (digits[0].length < spaces) {
-        //       var missingspaces = spaces - digits[0].length;
-        //       for (var i=0; i< missingspaces; i++) {
-        //         result = " " + result;
-        //       }
-        //     }
-        //     return result;
-        // }
-
-        // function getNumAt(strnum, pos)
-        // {
-        //   if (strnum.charAt(pos) == " ") {
-        //     return 0x7F;
-        //   } else if (strnum.charAt(pos) == "-") {
-        //     return NEG;
-        //   } else {
-        //     return strnum.charCodeAt(pos);
-        //   }
-        // }
-
-        // // ... display the DATE on the 7-segment display
-        // function display(DIN, CS, CLK, number)  
-        // {
-
-        //   if (typeof Linuxduino.digitalWrite != 'function') return;
-
-        //   //set_register(MAX7219_REG_SHUTDOWN, OFF);  // turn off display
-        //   set_register(DIN, CS, CLK, MAX7219_REG_SCANLIMIT, 7);   // scan limit 8 digits
-        //   set_register(DIN, CS, CLK, MAX7219_REG_DECODE, 0b11111111); // decode all digits
-
-        //   var num = roundFtlStr(number, 2, 2);
-
-        //   // Set Display 1 and 3 with format 123.0
-        //   set_register(DIN, CS, CLK, 8, getNumAt(num,0) );
-        //   set_register(DIN, CS, CLK, 7, getNumAt(num,1) |  DP);
-        //   set_register(DIN, CS, CLK, 6, getNumAt(num,3) );
-        //   set_register(DIN, CS, CLK, 5, getNumAt(num,4) );
-
-        //   set_register(DIN, CS, CLK, 4, 0x7F );
-        //   set_register(DIN, CS, CLK, 3, 0x7F );
-        //   set_register(DIN, CS, CLK, 2, 0x7F );
-        //   set_register(DIN, CS, CLK, 1, 0x7F );
-
-        //   set_register(DIN, CS, CLK, MAX7219_REG_SHUTDOWN, ON);   // Turn on display
-        // }
-
-
-        // // ## Linuxduino Main
-
-        // Linuxduino.onRuntimeInitialized = function() {
-        //   console.log('wsm file loaded');
-
-        //   // ## Serial
-        //   Serial =  new Linuxduino.Serial();
-        //   Serial.begin("/dev/ttyAMA0", 9600);
-        //   writeLCDText(Serial, ""); // Clear Display
-
-        //   // ## Load Cell Setup
-        //   scale_init (DOUT,CLK);
-        //   // Assuming no weight at the begining
-        //   OFFSET = scale_get_offset (DOUT, CLK);
-        //   console.log("OFFSET = " + OFFSET);
-
-        // }
-
-
-        // ## Angular app
-
-        var app = angular.module('myApp', ['ngMaterial']);
-        app.controller('myCtrl', function($scope, $compile, $interval) {
-
-          $scope.productWeight = 0;
-          $scope.zeroWeight = 0;
-          $scope.productPrice = 0;
-          $scope.currentTare = 0;
-          $scope.productName = "";
-          $scope.tareStyle = {'visibility': 'hidden'};
-          var hardwareWeight = 0;
-          
-          
-
-          $scope.tiles = [
-            { text: 'Chicken Box', price:25, image: 'img/chicken.jpg' },
-            { text: 'Meat', price:8, image: 'img/meat.jpg'},
-            { text: 'Avocado', price:1.75, image: 'img/avocado.jpg'},
-            { text: 'Tomato', price:0.85, image: 'img/tomato.jpg'},
-            { text: 'Limes', price:0.72, image: 'img/limes.jpg'}
-          ];
-
-          $scope.productClick = function (index) {
-            console.log("Product Click"+$scope.tiles[index].text);
-            $scope.productName = $scope.tiles[index].text;
-            $scope.productPrice = $scope.tiles[index].price;
+        $scope.tareClick = function() {
+          if ($scope.tareStyle.visibility === 'hidden') {
+            $scope.tareStyle = {'visibility': 'visible'};
+            $scope.currentTare = $scope.productWeight - $scope.zeroWeight;
+          } else {
+            $scope.tareStyle = {'visibility': 'hidden'};
+            $scope.currentTare = 0;
           }
+          console.log("Weight:"+ $scope.productWeight);
+          console.log("Tare:"+ $scope.currentTare);
+        }
 
-          $scope.zeroClick = function() {
-            console.log("Zero Click");
-            $scope.zeroWeight = $scope.productWeight;
-          }
-
-          $scope.tareClick = function() {
-            if ($scope.tareStyle.visibility === 'hidden') {
-              $scope.tareStyle = {'visibility': 'visible'};
-              $scope.currentTare = $scope.productWeight - $scope.zeroWeight;
-            } else {
-              $scope.tareStyle = {'visibility': 'hidden'};
-              $scope.currentTare = 0;
-            }
-            console.log("Weight:"+ $scope.productWeight);
-            console.log("Tare:"+ $scope.currentTare);
-          }
-
-        });
-
-        // ## Angular webcomponents
-
-        app.directive("physicalWeightSensor", function() {
-          return {
-            require: 'ngModel',
-            link: function(scope, element, attributes, ngModel) {
-
-              // var ngvalue = ngModel.$viewValue; // Get ngModel Value
-              window.setInterval(function () {
-
-                if (typeof Linuxduino.digitalRead != 'function') return;
-                var weight = scale_get_weight(DOUT, CLK, OFFSET, CALIBRATION_FACTOR); //Math.random();
-                ngModel.$setViewValue(weight);
-                ngModel.$render();
-                
-              }, 500);
-            }
-          };
-        });
-
-        app.directive("physicalSpan", function() {
-          return {
-            link: function(scope, element, attrs) {
-
-              // Hide the span Text by default
-              element.css({'display': 'none'});
-
-              if(angular.isUndefined(attrs.ngBind)) {
-                console.error("Required atrribute in physical-span not defined");
-                return;
-              }
-
-              scope.$watch(attrs.ngBind, function(newValue, oldValue) {
-                // Set initial value
-                if (newValue === oldValue) return; // We don't want the initial value anyway
-                //console.log("LCD: "+newValue);
-                writeLCDText(Serial, newValue.toString());
-
-              });
-            }
-          };
-        });
-
-        app.directive("physicalDigits", function($timeout) {
-          return {
-            link: function(scope, element, attrs) {
-
-              // Hide the span Text by default
-              element.css({'display': 'none'});
-
-              if(angular.isUndefined(attrs.ngBind)  || 
-                 angular.isUndefined(attrs.dinGpio) ||
-                 angular.isUndefined(attrs.csGpio)  ||
-                 angular.isUndefined(attrs.clkGpio) ) {
-                console.error("Required atrribute in physical-digits not defined");
-                return;
-              }
-
-              InitPins(500);
-
-              scope.$watch(attrs.ngBind, function(newValue, oldValue) {
-                // Set initial value
-                if (newValue === oldValue)return; // We don't want the initial value anyway
-                //console.log("Digits: "+newValue);  
-                display(parseInt(attrs.dinGpio), parseInt(attrs.csGpio), parseInt(attrs.clkGpio), parseFloat(newValue));
-              });
-
-              function InitPins(milliseconds) {
-                $timeout(function() {
-                  if (typeof Linuxduino.pinMode === 'function') {
-                    // Init Pins
-                    Linuxduino.pinMode(parseInt(attrs.dinGpio), Linuxduino.OUTPUT);   // serial data-in
-                    Linuxduino.pinMode(parseInt(attrs.csGpio), Linuxduino.OUTPUT);    // chip-select, active low    
-                    Linuxduino.pinMode(parseInt(attrs.clkGpio), Linuxduino.OUTPUT);   // serial clock
-                    Linuxduino.digitalWrite(parseInt(attrs.csGpio), Linuxduino.HIGH);
-
-                    // Reset Display
-                    resetDisplay(parseInt(attrs.dinGpio), parseInt(attrs.csGpio), parseInt(attrs.clkGpio));            
-                  } else {
-                    // Retry
-                    InitPins(milliseconds);   
-                  }
-                  
-                }, milliseconds);
-              };
-
-            }
-          };
-        });
-
-        app.directive("physicalButton", function($timeout) {      
-        return {
-          scope: {
-            gpio: '@gpio'
-          },
-          link: function(scope, element, attributes, iElm) {
-
-            if(angular.isUndefined(scope.gpio)) {
-              console.error("Required atrribute in physical-button not defined");
-              return;
-            }
-
-            InitPins(500);
-
-            scope.$watch('gpio', function(newValue, oldValue) {
-              readButton(1000);
-            });
-
-            function readButton(milliseconds) {
-              $timeout(function() {
-                if (scope.gpio != undefined && 
-                  typeof Linuxduino.digitalRead === 'function') {
-                  var input = Linuxduino.digitalRead(parseInt(scope.gpio));
-                  if (input == Linuxduino.HIGH) {
-                    // Call click function
-                    angular.element(element).triggerHandler('click');
-                  }
-                }
-                readButton(milliseconds);
-              }, milliseconds);
-            };
-
-            function InitPins(milliseconds) {
-              $timeout(function() {
-                if (typeof Linuxduino.pinMode === 'function') {
-                  Linuxduino.pinMode(parseInt(scope.gpio), Linuxduino.INPUT);   // serial data-in               
-                } else {
-                  // Retry
-                  InitPins(milliseconds);                    
-                }
-              }, milliseconds);
-            };
-
-          }
-        };
       });
 
     </script>

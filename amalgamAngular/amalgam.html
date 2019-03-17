@@ -7,25 +7,24 @@
 <!-- ### Amalgam compiler -->
 <script src="./amalgam.js"></script>
 
-<!-- ### Physical Web Components (Add more if needed) -->
-<!-- <script src="./physical-button.js"></script>
-<script src="./physical-static-range.js"></script>
-<script src="./physical-dynamic-range.js"></script> -->
-
-
-<!-- ### Test Physical Web Components (Add more if needed) -->
-<script src="./test-physical-button.js"></script>
-<script src="./test-physical-submit.js"></script>
-
+<!-- Boot Sequence:
+1. Linuxduino WebAssembly
+2. Angular Compiler
+3. Angular App starts
+ -->
 <script>
 	if (typeof require === 'function') {
 		var Linuxduino = require("linuxduino");
 
 		Linuxduino.onRuntimeInitialized = function() {
 			console.log("WASM loaded");
-		  customElements.define('physical-button', PHYSICAL_BUTTON);
-		  customElements.define('physical-static-range', PHYSICAL_STATIC_RANGE);
-		  customElements.define('physical-dynamic-range', PHYSICAL_DYNAMIC_RANGE); 
+			initAmalgamCompiler(); // After compilation Angular app starts
 		}
 	}
+
+	var amalgam = angular.module("amalgam", []);
 </script>
+
+<!-- ### Physical Web Components (Add more if needed) -->
+<script src="./physical-span.js"></script>
+<script src="./physical-weight-sensor.js"></script>

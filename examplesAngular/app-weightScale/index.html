@@ -3,18 +3,17 @@
 <head>
   <title>Weight Scale Version 1</title>
 
-  
-  <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/segment7" type="text/css"/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
-  <link rel='stylesheet prefetch' href='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.6/angular-material.css'>
+  <!-- <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/segment7" type="text/css"/> -->
+  <link rel="stylesheet" href="ext/css.css">
+  <link rel='stylesheet prefetch' href='ext/angular-material.css'>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.min.js'></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.min.js'></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-aria.min.js'></script>
-  <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-messages.min.js'></script>
-  <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js'></script>
-  <script src='https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.6/angular-material.js'></script>
+  <script src="ext/angular.min.js"></script>
+  <script src='ext/angular-animate.min.js'></script>
+  <script src='ext/angular-route.min.js'></script>
+  <script src='ext/angular-aria.min.js'></script>
+  <script src='ext/angular-messages.min.js'></script>
+  <script src='ext/svg-assets-cache.js'></script>
+  <script src='ext/angular-material.js'></script>
 
   <!-- Amalgam -->
   <link rel="stylesheet" href="styles.css">
@@ -23,10 +22,6 @@
 </head>
 <body>
     <div ng-controller="myCtrl">
-
-      <!-- Phisical Web Components -->
-      <!-- <physical-weight-sensor ng-model="productWeight"></physical-weight-sensor> -->
-      <!-- <physical-span ng-bind="productName+'\nTotal: '+((productWeight-zeroWeight-currentTare)*productPrice | number : 2)"></physical-span> -->
 
       <div class="container">
         <span id="lcdDisplay" ng-bind="productName+'\nTotal: '+((productWeight-zeroWeight-currentTare)*productPrice | number : 2)"></span>
@@ -46,7 +41,7 @@
                     <span class="tare" ng-style="tareStyle">TARE</span>
                   </div>
                   <div class="digits">
-                    <span ng-bind="(productWeight-zeroWeight-currentTare) | number : 2"></span>
+                    <span ng-bind="(productWeight-zeroWeight-currentTare) | number : 2" id="weightDigits"></span>
                   </div>
             </div>
 
@@ -55,7 +50,7 @@
                     <span>Price $</span>
                   </div>
                   <div class="digits" >
-                    <span ng-bind="productPrice | number : 2"></span>
+                    <span ng-bind="productPrice | number : 2" id="priceDigits"></span>
                   </div>
             </div>
 
@@ -64,7 +59,7 @@
                 <span>Total $</span>
               </div>
               <div class="digits">
-                <span ng-bind="(productWeight-zeroWeight-currentTare)*productPrice | number : 2"></span>
+                <span ng-bind="(productWeight-zeroWeight-currentTare)*productPrice | number : 2" id="totalDigits"></span>
               </div>
             </div>
 
@@ -76,8 +71,8 @@
       <section layout="row">
         <!-- NAV BAR -->
         <md-sidenav class="sidenav" md-component-id="left" md-is-locked-open="true" flex="" >
-          <md-button class="md-raised" ng-click="zeroClick()">ZERO</md-button>
-          <md-button class="md-raised" ng-click="tareClick()">TARE</md-button>
+          <md-button class="md-raised" ng-click="zeroClick()" id="buttonZero">ZERO</md-button>
+          <md-button class="md-raised" ng-click="tareClick()" id="buttonTare">TARE</md-button>
         </md-sidenav>
         <!-- PRODUCTS -->
         <div class="scroll-container" flex="">
@@ -99,84 +94,53 @@
 
     <script>
 
-        // ## Linuxduino Load Cell Firmware
+      // ## Angular app
+      
+      var app = angular.module('myApp', ['ngMaterial', 'amalgam']);
+      app.controller('myCtrl', function($scope, $compile, $interval, $timeout) {
 
-        var Linuxduino = require("linuxduino");
+        $scope.productWeight = 0;
+        $scope.zeroWeight = 0;
+        $scope.productPrice = 0;
+        $scope.currentTare = 0;
+        $scope.productName = "";
+        $scope.tareStyle = {'visibility': 'hidden'};
+        var hardwareWeight = 0;
+        
         
 
-        // // ## Linuxduino Main
+        $scope.tiles = [
+          { text: 'Chicken Box', price:25, image: 'img/chicken.jpg' },
+          { text: 'Meat', price:8, image: 'img/meat.jpg'},
+          { text: 'Avocado', price:1.75, image: 'img/avocado.jpg'},
+          { text: 'Tomato', price:0.85, image: 'img/tomato.jpg'},
+          { text: 'Limes', price:0.72, image: 'img/limes.jpg'}
+        ];
 
-        // Linuxduino.onRuntimeInitialized = function() {
-        //   console.log('wsm file loaded');
+        $scope.productClick = function (index) {
+          console.log("Product Click: "+$scope.tiles[index].text);
+          $scope.productName = $scope.tiles[index].text;
+          $scope.productPrice = $scope.tiles[index].price;
+        }
 
-        //   // ## Serial
-        //   Serial =  new Linuxduino.Serial();
-        //   Serial.begin("/dev/ttyAMA0", 9600);
-        //   writeLCDText(Serial, ""); // Clear Display
+        $scope.zeroClick = function() {
+          console.log("Zero Click");
+          $scope.zeroWeight = $scope.productWeight;
+        }
 
-        //   // ## Load Cell Setup
-        //   scale_init (DOUT,CLK);
-        //   // Assuming no weight at the begining
-        //   OFFSET = scale_get_offset (DOUT, CLK);
-        //   console.log("OFFSET = " + OFFSET);
-
-        // }
-
-        // ## Angular app
-        var app = angular.module('myApp', ['ngMaterial', 'amalgam']);
-        app.controller('myCtrl', function($scope, $compile, $interval, $timeout) {
-
-          $scope.productWeight = 0;
-          $scope.zeroWeight = 0;
-          $scope.productPrice = 0;
-          $scope.currentTare = 0;
-          $scope.productName = "";
-          $scope.tareStyle = {'visibility': 'hidden'};
-          var hardwareWeight = 0;
-          
-          
-
-          $scope.tiles = [
-            { text: 'Chicken Box', price:25, image: 'img/chicken.jpg' },
-            { text: 'Meat', price:8, image: 'img/meat.jpg'},
-            { text: 'Avocado', price:1.75, image: 'img/avocado.jpg'},
-            { text: 'Tomato', price:0.85, image: 'img/tomato.jpg'},
-            { text: 'Limes', price:0.72, image: 'img/limes.jpg'}
-          ];
-
-          $scope.productClick = function (index) {
-
-              //var scope = angular.element( document.querySelector( '#lcdDisplay' )).scope();
-              //$compile(document.querySelector( '#lcdDisplay' ))(scope);
-
-            console.log("Product Click: "+$scope.tiles[index].text);
-            $scope.productName = $scope.tiles[index].text;
-            $scope.productPrice = $scope.tiles[index].price;
+        $scope.tareClick = function() {
+          if ($scope.tareStyle.visibility === 'hidden') {
+            $scope.tareStyle = {'visibility': 'visible'};
+            $scope.currentTare = $scope.productWeight - $scope.zeroWeight;
+          } else {
+            $scope.tareStyle = {'visibility': 'hidden'};
+            $scope.currentTare = 0;
           }
+          console.log("Weight:"+ $scope.productWeight);
+          console.log("Tare:"+ $scope.currentTare);
+        }
 
-          $scope.zeroClick = function() {
-            console.log("Zero Click");
-            $scope.zeroWeight = $scope.productWeight;
-          }
-
-          $scope.tareClick = function() {
-            if ($scope.tareStyle.visibility === 'hidden') {
-              $scope.tareStyle = {'visibility': 'visible'};
-              $scope.currentTare = $scope.productWeight - $scope.zeroWeight;
-            } else {
-              $scope.tareStyle = {'visibility': 'hidden'};
-              $scope.currentTare = 0;
-            }
-            console.log("Weight:"+ $scope.productWeight);
-            console.log("Tare:"+ $scope.currentTare);
-          }
-
-        });
-
-        // ## Angular webcomponents
-
-
-
+      });
 
     </script>
 </body>
