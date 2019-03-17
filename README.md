@@ -11,7 +11,7 @@ After the folder is added to the proyect and renamed as amalgam it can them be i
 ## Examples native
 **./examplesNative** contain two examples, a Physical Youtube Player and a Physical Dancing Speaker. 
 
-#### Physical Youtube Player
+### > Physical Youtube Player
 [Video](https://youtu.be/FK0AlLZHyIE)
 ![Physical Youtube Player 1](https://raw.githubusercontent.com/NVSL/amalgam/master/examplesNative/deviceImages/YoutubePlayer2.png)
 Soft elements are translated into physical components to make a new device. 
@@ -40,7 +40,7 @@ Extra Required CSS:
 }
 ```
 
-### Physical Dancing Speaker
+### > Physical Dancing Speaker
 [Video](https://youtu.be/UGUE7BeflxM)
 ![Physical Dancing Speaker](https://github.com/NVSL/amalgam/blob/master/examplesNative/deviceImages/DancingSpeaker2.png?raw=true)
 HTML and CSS code:
@@ -74,12 +74,12 @@ HTML and CSS code:
 **./examplesAngular** contain two different physical versions of a soft weight scale. Here is the soft version and the two versions compared side by side:
 ![All Weight Scales](https://raw.githubusercontent.com/NVSL/amalgam/master/examplesAngular/deviceImages/AllWeightScales1.png)
 
-### Soft Weight Scale   
+### > Soft Weight Scale   
 A soft weight scale with a simulated load cell and simulated back text displat   
 <img src="https://raw.githubusercontent.com/NVSL/amalgam/master/examplesAngular/deviceImages/VirtualWeightScale.PNG" alt="Soft Weight Scale" width="310"/>
 <br>
 
-### Physical Weight Scale version 1
+### > Physical Weight Scale version 1
 [Video](https://youtu.be/XGMce_g8gSM)
 Load cell and back display added   
 <img src="https://raw.githubusercontent.com/NVSL/amalgam/master/examplesAngular/deviceImages/WeightScaleVer1.jpg" alt="Physical Weight Scale version 1" width="330"/>
@@ -97,7 +97,7 @@ Extra Required CSS:
 ```
 *Note: hard elements here use default pin and ports assigments
 
-### Physical Weight Scale version 2
+### > Physical Weight Scale version 2
 <img src="https://raw.githubusercontent.com/NVSL/amalgam/master/examplesAngular/deviceImages/WeightScaleVer2.jpg" alt="Physical Weight Scale version 2" width="350"/>   
 Extra Required CSS: 
 
