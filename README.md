@@ -1,5 +1,5 @@
 # Amalgam
-Amalgam Core for translating html soft elements to Physical Web Components (hard elemnts) using Amalgam-enhanced CSS. 
+Amalgam Core for translating html soft elements to Physical Web Components (hard elements) using Amalgam-enhanced CSS. 
 
 ## AmaglamNative & AmalgamAngular
 **./amalgamNative** and **./amalgamAngular** both contain a compiler which translates soft elements to hard elements. **amalgamNative** has hard elements that interface with electrical components made using native web components whereas **amalgamAngular** has hard elements that use Angular directives for creating components. 
