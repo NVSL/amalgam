@@ -36,7 +36,8 @@ Extra Required CSS:
 
 #progressBar {
   width: 99%;
-  hardware: physical-motorized-pot(motora:var(--gpio23), motorb:var(--gpio24), touch:var(--gpio25), i2c-addr:0x48, i2c-port:url("/dev/i2c-1"));
+  hardware: physical-motorized-pot(motora:var(--gpio23), motorb:var(--gpio24),   
+      touch:var(--gpio25), i2c-addr:0x48, i2c-port:url("/dev/i2c-1"));
 }
 ```
 
