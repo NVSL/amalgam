@@ -1,4 +1,4 @@
-```Note: If you are having trouble running amalgam, feel free to email me jgarzagu at ucsd.edu```
+```Note: If you are having trouble running Amalgam, feel free to email me jgarzagu at ucsd.edu```
 # Amalgam
 Amalgam Core for translating html soft elements to Physical Web Components (hard elements) using Amalgam-enhanced CSS. 
 
